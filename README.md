@@ -57,12 +57,13 @@ If all named commits are already ancestors of HEAD, git merge will exit early wi
 ### How to come back to a previous version or undo something
 * **To undo a commit (but not a merge)**: !git checkout -f
 * **To go back after breaking the code**:
-  + *!git checkout <SHA>* to see commit history and find <SHA>, which looks like 'kiagcbii8n2c48n745ctm7x4m5xt2oy8t52x80m83t' and is the ID of the commit
-  + *!git checkout <SHA>*
+  + *!git log* to see commit history and find \<SHA\>, which looks like 'kiagcbii8n2c48n745ctm7x4m5xt2oy8t52x80m83t' and is the ID of the commit
+  + *!git checkout \<SHA\>*
 
 n.B. I think there it is possible to merge an earlier version if the code broke after a given commit, but I have to verify
 
 ### Useful stuff 
 * **Check discrepancies between files**: *!git diff* (all files compared with current) or *!git diff file_1* (compares tip file with current file), useful to know which files to add/commit
+* **Check status of the repo**: i.e. are there any new files which haven't been added to the staging box/commited 
 
 # How to Stream Data from a dataset into the colab notebook
