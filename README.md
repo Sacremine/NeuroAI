@@ -64,6 +64,6 @@ n.B. I think there it is possible to merge an earlier version if the code broke 
 
 ### Useful stuff 
 * **Check discrepancies between files**: *!git diff* (all files compared with current) or *!git diff file_1* (compares tip file with current file), useful to know which files to add/commit
-* **Check status of the repo**: i.e. are there any new files which haven't been added to the staging box/commited 
+* **Check status of the repo**: *!git status* i.e. are there any new files which haven't been added to the staging box/commited
 
 # How to Stream Data from a dataset into the colab notebook
