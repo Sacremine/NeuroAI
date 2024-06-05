@@ -1,8 +1,14 @@
-function dxdt = thalamic_rebound(t,x, pars)
-    V = x(1);
-    h = x(2);
-    n = x(3);
-    ht = x(4);
+function dxdt = rebound_with_synapse(t,x, pars)
+    V1 = x(1);
+    h1 = x(2);
+    n1 = x(3);
+    ht1 = x(4);
+
+    V2 = x(5);
+    h2 = x(6);
+    n2 = x(7);
+    ht2 = x(8);
+    s2 = x(9);
 
     GL = pars.gleak;
     GNa = pars.gnamax;
@@ -14,45 +20,90 @@ function dxdt = thalamic_rebound(t,x, pars)
     EL = pars.el;
     Cm = pars.cm;
     frq = pars.baseCurrentFrq;
+    syn_a = pars.syn_a;
+    syn_b = pars.syn_b;
+    Gsyn = pars.gsynmax;
+    Esyn = pars.esyn;
     
     Iosc = 0;
     if frq ~= 0
-        Iosc = (sin(2*pi*t*frq*(1+(rand - 0.5)/25))-1)*1e-11;
+        Iosc = (sin(2*pi*t*frq*(1+randn/60)-1))*1e-11;
     end
 
     Iapp = Iosc + ((rand-0.5))*1e-10;
 
-    if V == -35e-3
-        am = 1e3;
-    else
-        am  = (1e5)*(V + 0.035)/(eps + 1 - exp(-100*(V+0.035)));
-    end
-    bm = 4000*exp(-1*(V+0.06)/(0.018));
-    m = am / (am + bm + eps);
+    am1  = (1e5)*(V1 + 0.035)/(eps + 1 - exp(-100*(V1 + 0.035)));
+
+    bm1 = 4000*exp(-1*(V1 + 0.06)/(0.018));
+    m1 = am1 / (am1 + bm1 + eps);
     
-    ah = 350*exp(-50*(V+0.058));
-    bh = 5000/(1 + exp(-100*(V+0.028)));
-    dhdt = ah*(1-h) - bh*h;
+    ah1 = 350*exp(-50*(V1 + 0.058));
+    bh1 = 5000/(1 + exp(-100*(V1 + 0.028)));
+    dh1dt = ah1*(1-h1) - bh1*h1;
 
-    if V == -34e-3
-        an = 500;
+    an1 = (5e4)*(V1 + 0.034)/(eps + 1 - exp(-100*(V1 + 0.034)));
+    
+    bn1 = 625*exp(-12.5*(V1 + 0.044));
+    dn1dt = an1*(1-n1) - bn1*n1;
+
+    mt1 = 1/(1 + exp(-1*(V1 + 0.052)/0.0074));
+
+    ht1ss = 1/(1 + exp(500*(V1 + 0.076)));
+    if V1 < -0.080
+        tht1 = 0.001*exp(15*(V1 + 0.467));
     else
-        an = (5e4)*(V+0.034)/(eps + 1 - exp(-100*(V+0.034)));
+        tht1 = 0.028 + 0.001*exp(-(V1 + 0.022)/0.0105);
     end
-    bn = 625*exp(-12.5*(V+0.044));
-    dndt = an*(1-n) - bn*n;
+    dht1dt = (ht1ss - ht1) / (tht1 + eps);
 
-    mt = 1/(1 + exp(-1*(V+0.052)/0.0074));
+    dV1dt = (1/Cm)*(GL*(EL - V1) + GNa*(h1*m1^3)*(ENa - V1) + ...
+        GK*(n1^4)*(EK - V1) + GT*(ht1*mt1^2)*(ECa - V1) + ...
+        + eps + Iapp);
 
-    htss = 1/(1 + exp(500*(V+0.076)));
-    if V < -0.080
-        tht = 0.001*exp(15*(V+0.467));
+
+
+
+
+
+
+
+
+    am2  = (1e5)*(V2 + 0.035)/(eps + 1 - exp(-100*(V2 + 0.035)));
+
+    bm2 = 4000*exp(-1*(V2 + 0.06)/(0.018));
+    m2 = am2 / (am2 + bm2 + eps);
+    
+    ah2 = 350*exp(-50*(V2 + 0.058));
+    bh2 = 5000/(1 + exp(-100*(V2 + 0.028)));
+    dh2dt = ah2*(1-h2) - bh2*h2;
+
+    an2 = (5e4)*(V2 + 0.034)/(eps + 1 - exp(-100*(V2 + 0.034)));
+    
+    bn2 = 625*exp(-12.5*(V2 + 0.044));
+    dn2dt = an2*(1-n2) - bn2*n2;
+
+    mt2 = 1/(1 + exp(-1*(V2 + 0.052)/0.0074));
+
+    ht2ss = 1/(1 + exp(500*(V2 + 0.076)));
+    if V2 < -0.080
+        tht2 = 0.001*exp(15*(V2 + 0.467));
     else
-        tht = 0.028 + 0.001*exp(-(V+0.022)/0.0105);
+        tht2 = 0.028 + 0.001*exp(-(V2 + 0.022)/0.0105);
     end
-    dhtdt = (htss - ht) / (tht + eps);
+    dht2dt = (ht2ss - ht2) / (tht2 + eps);
 
-    dVdt = (1/Cm)*(GL*(EL - V) + GNa*(h*m^3)*(ENa - V) + GK*(n^4)*(EK - V) + GT*(ht*mt^2)*(ECa - V) + eps + Iapp);
- 
-    dxdt = [ dVdt; dhdt; dndt; dhtdt];
+    syn_ss = 1/(1+exp(-(V1 + 15e-3)/(0.0064)));
+
+    ds2dt = syn_a*(1 - s2)*syn_ss - syn_b*s2;
+
+    dV2dt = (1/Cm)*(GL*(EL - V2) + GNa*(h2*m2^3)*(ENa - V2) + ...
+        GK*(n2^4)*(EK - V2) + GT*(ht2*mt2^2)*(ECa - V2) + ...
+        Gsyn*s2*(Esyn - V1) + eps + Iapp);
+
+
+
+    dxdt = [ dV1dt; dh1dt; dn1dt; dht1dt; 
+             dV2dt; dh2dt; dn2dt; dht2dt; 
+             ds2dt ];
 end
+
