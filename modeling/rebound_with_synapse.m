@@ -106,4 +106,3 @@ function dxdt = rebound_with_synapse(t,x, pars)
              dV2dt; dh2dt; dn2dt; dht2dt; 
              ds2dt ];
 end
-
