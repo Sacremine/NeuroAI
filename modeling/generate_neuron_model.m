@@ -37,11 +37,19 @@ function dxdt = generate_neuron_model(t, x, pars, conn_matrix)
         s = x(s_idx);
         
         % Synaptic current from other neurons
+        dsdt=0;
         Isyn = 0;
         for j = 1:num_neurons
             if conn_matrix(j, i) == 1
                 V_pre_idx = (j - 1) * 5 + 1; % presynaptic neuron V index
                 Isyn = Isyn + Gsyn * s * (Esyn - x(V_pre_idx));
+                syn_ss = 1 / (1 + exp(-(x(V_pre_idx) + 15e-3) / 0.0064));
+                dsdt = syn_a * (1 - s) * syn_ss - syn_b * s;
+            elseif conn_matrix(j,i) == -1
+                V_pre_idx = (j - 1) * 5 + 1; % presynaptic neuron V index
+                Isyn = Isyn + -Gsyn * s * (Esyn - x(V_pre_idx));
+                syn_ss = 1 / (1 + exp(-(x(V_pre_idx) + 15e-3) / 0.0064));
+                dsdt = syn_a * (1 - s) * syn_ss - syn_b * s;
             end
         end
         
@@ -74,15 +82,9 @@ function dxdt = generate_neuron_model(t, x, pars, conn_matrix)
         end
         dhtdt = (ht_ss - ht) / (tht + eps);
         
-        % Synaptic gating variable dynamics
-        if i > 1
-            V_pre_idx = (i - 2) * 5 + 1; % presynaptic neuron V index
-            syn_ss = 1 / (1 + exp(-(x(V_pre_idx) + 15e-3) / 0.0064));
-            dsdt = syn_a * (1 - s) * syn_ss - syn_b * s;
-        else
-            dsdt = 0;
-        end
-        
+      
+           
+     
         % Membrane potential dynamics
         dVdt = (1 / Cm) * (GL * (EL - V) + GNa * (h * m^3) * (ENa - V) + ...
             GK * (n^4) * (EK - V) + GT * (ht * mt^2) * (ECa - V) + ...
