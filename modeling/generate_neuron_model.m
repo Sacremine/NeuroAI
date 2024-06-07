@@ -20,6 +20,7 @@ function dxdt = generate_neuron_model(t, x, pars, conn_matrix)
     syn_b = pars.syn_b;
     Gsyn = pars.gsynmax;
     Esyn = pars.esyn;
+    noise = pars.noise; % bool
     
     % Iterate over each neuron
     for i = 1:num_neurons
@@ -48,9 +49,9 @@ function dxdt = generate_neuron_model(t, x, pars, conn_matrix)
         % Applied current
         Iosc = 0;
         if frq ~= 0
-            Iosc = (sin(2 * pi * t * frq * (1 + randn) - 1)) * 1e-11;
+            Iosc = (sin(2 * pi * t * frq * (1 + randn*noise) - 1)) * 1e-11;
         end
-        Iapp = Iosc + ((rand - 0.5)) * 1e-10;
+        Iapp = Iosc + ((rand - 0.5)) * 1e-10 * noise;
         
         % Compute gating variables and their derivatives
         am  = (1e5) * (V + 0.035) / (eps + 1 - exp(-100 * (V + 0.035)));
