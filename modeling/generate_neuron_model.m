@@ -43,13 +43,17 @@ function dxdt = generate_neuron_model(t, x, pars, conn_matrix)
             if conn_matrix(j, i) == 1
                 V_pre_idx = (j - 1) * 5 + 1; % presynaptic neuron V index
                 Isyn = Isyn + Gsyn * s * (Esyn - x(V_pre_idx));
+
                 syn_ss = 1 / (1 + exp(-(x(V_pre_idx) + 15e-3) / 0.0064));
-                dsdt = syn_a * (1 - s) * syn_ss - syn_b * s;
+                dsdt = dsdt + syn_a * (1 - s) * syn_ss - syn_b * s;
             elseif conn_matrix(j,i) == -1
                 V_pre_idx = (j - 1) * 5 + 1; % presynaptic neuron V index
                 Isyn = Isyn - Gsyn * s * (Esyn - x(V_pre_idx));
+
                 syn_ss = 1 / (1 + exp(-(x(V_pre_idx) + 15e-3) / 0.0064));
-                dsdt = syn_a * (1 - s) * syn_ss - syn_b * s;
+                dsdt = dsdt + syn_a * (1 - s) * syn_ss - syn_b * s;
+            %elseif i==j && conn_matrix(j,i)==1 autapses
+            %elseif i==j && conn_matrix(j,i)==-1
             end
         end
         
@@ -95,8 +99,6 @@ function dxdt = generate_neuron_model(t, x, pars, conn_matrix)
         dxdt(h_idx) = dhdt;
         dxdt(n_idx) = dndt;
         dxdt(ht_idx) = dhtdt;
-        if i > 1
-            dxdt(s_idx) = dsdt;
-        end
+        dxdt(s_idx) = dsdt;
     end
 end
